@@ -52,8 +52,8 @@ git clone <repository-url>
 cd llm-evaluation
 
 # Create conda environment
-conda create -n llm_eval python=3.9 -y
-conda activate llm_eval
+conda create -n llmeval python=3.9 -y
+conda activate llmeval
 
 # Install dependencies
 pip install -r requirements.txt

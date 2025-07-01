@@ -122,11 +122,16 @@ class LogitsSteerer(nn.Module):
         steered_logits = original_logits + alpha.unsqueeze(-1) * steering_vector
         
         # Compute metadata
+        alpha_np = alpha.detach().cpu().numpy()
+        steering_norm_np = torch.norm(steering_vector, dim=-1).detach().cpu().numpy()
+        logits_change_np = torch.norm(steered_logits - original_logits, dim=-1).detach().cpu().numpy()
+        max_steering_token_np = torch.argmax(torch.abs(steering_vector), dim=-1).detach().cpu().numpy()
+        
         metadata = {
-            'steering_strength': alpha.detach().cpu().numpy(),
-            'steering_norm': torch.norm(steering_vector, dim=-1).detach().cpu().numpy(),
-            'logits_change': torch.norm(steered_logits - original_logits, dim=-1).detach().cpu().numpy(),
-            'max_steering_token': torch.argmax(torch.abs(steering_vector), dim=-1).detach().cpu().numpy()
+            'steering_strength': alpha_np if alpha_np.ndim > 0 else alpha_np.item(),
+            'steering_norm': steering_norm_np if steering_norm_np.ndim > 0 else steering_norm_np.item(),
+            'logits_change': logits_change_np if logits_change_np.ndim > 0 else logits_change_np.item(),
+            'max_steering_token': max_steering_token_np if max_steering_token_np.ndim > 0 else max_steering_token_np.item()
         }
         
         return steered_logits, metadata
@@ -157,8 +162,8 @@ class LogitsSteerer(nn.Module):
             original_logits, preference_embedding, decayed_params
         )
         
-        metadata['decay_factor'] = decay
-        metadata['generation_step'] = generation_step
+        metadata['decay_factor'] = float(decay)
+        metadata['generation_step'] = int(generation_step)
         
         return steered_logits, metadata
     
@@ -203,12 +208,15 @@ class LogitsSteerer(nn.Module):
         steered_entropy = -torch.sum(steered_probs * torch.log(steered_probs + 1e-10), dim=-1)
         entropy_change = steered_entropy - orig_entropy
         
+        max_prob_change_tensor = torch.max(torch.abs(prob_diff), dim=-1)[0].detach().cpu().numpy()
+        entropy_change_np = entropy_change.detach().cpu().numpy()
+        
         return {
             'kl_divergence': kl_div.item(),
             'top_k_token_changes': top_k_changes.indices.detach().cpu().numpy(),
             'top_k_prob_changes': top_k_changes.values.detach().cpu().numpy(),
-            'entropy_change': entropy_change.detach().cpu().numpy(),
-            'max_prob_change': torch.max(torch.abs(prob_diff), dim=-1)[0].detach().cpu().numpy()
+            'entropy_change': entropy_change_np if entropy_change_np.ndim > 0 else entropy_change_np.item(),
+            'max_prob_change': max_prob_change_tensor if max_prob_change_tensor.ndim > 0 else max_prob_change_tensor.item()
         }
     
     def calibrate_steering_strength(self, 

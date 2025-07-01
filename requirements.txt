@@ -48,4 +48,4 @@ plotly>=5.15.0
 # Uncomment if needed:
 # faiss-cpu>=1.7.4  # For efficient similarity search
 # redis>=4.5.0      # For caching
-# ray>=2.5.0        # For distributed processing 
+# ray>=2.5.0        # For distributed processing

@@ -105,10 +105,12 @@ class RefinementEngine:
             )
             
             # Step 3: Judge evaluation
+            # Convert preferences to JSON-safe format
+            safe_preferences = self._make_preferences_json_safe(inferred_preferences)
             judge_feedback = self.judge.evaluate_alignment(
                 prompt=current_prompt,
                 generation=generation.text,
-                preferences=inferred_preferences,
+                preferences=safe_preferences,
                 context=context
             )
             
@@ -119,7 +121,7 @@ class RefinementEngine:
                     original_prompt=current_prompt,
                     generation=generation.text,
                     judge_feedback=judge_feedback,
-                    preferences=inferred_preferences
+                    preferences=safe_preferences
                 )
             
             # Step 5: Compute convergence metrics
@@ -133,11 +135,12 @@ class RefinementEngine:
             )
             
             # Create iteration record
+            # Store the safe preferences to avoid serialization issues later
             iteration_record = RefinementIteration(
                 iteration=iteration + 1,
                 prompt=current_prompt,
                 generation=generation,
-                inferred_preferences=inferred_preferences,
+                inferred_preferences=safe_preferences,
                 judge_feedback=judge_feedback,
                 meta_judge_feedback=meta_judge_feedback,
                 convergence_metrics=convergence_metrics,
@@ -156,7 +159,7 @@ class RefinementEngine:
                 current_prompt=current_prompt,
                 judge_feedback=judge_feedback,
                 meta_judge_feedback=meta_judge_feedback,
-                preferences=inferred_preferences,
+                preferences=safe_preferences,
                 iteration=iteration + 1
             )
         
@@ -287,6 +290,35 @@ class RefinementEngine:
             metrics['final_edit_distance'] = edit_distances[-1]
         
         return metrics
+    
+    def _make_preferences_json_safe(self, preferences: Dict[str, Any]) -> Dict[str, Any]:
+        """Convert preferences containing InferredPreference objects to JSON-safe format"""
+        safe_prefs = {}
+        
+        for key, value in preferences.items():
+            if key == 'structured_preferences' and isinstance(value, dict):
+                # Convert InferredPreference objects to dictionaries
+                safe_structured = {}
+                for pref_key, pref_obj in value.items():
+                    if hasattr(pref_obj, 'category') and hasattr(pref_obj, 'description'):
+                        # This is an InferredPreference object
+                        safe_structured[pref_key] = {
+                            'category': pref_obj.category,
+                            'description': pref_obj.description,
+                            'confidence': getattr(pref_obj, 'confidence', 0.0),
+                            'supporting_edits': getattr(pref_obj, 'supporting_edits', [])
+                        }
+                    else:
+                        safe_structured[pref_key] = value
+                safe_prefs[key] = safe_structured
+            elif key == 'preference_embedding' and hasattr(value, 'tolist'):
+                # Convert numpy arrays to lists
+                safe_prefs[key] = value.tolist()
+            else:
+                # Keep other values as-is
+                safe_prefs[key] = value
+        
+        return safe_prefs
     
     def batch_refine(self, 
                     prompts: List[str],

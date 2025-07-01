@@ -40,7 +40,9 @@ class LLMInterface(ABC):
     
     def __init__(self, model_name: str, **kwargs):
         self.model_name = model_name
-        self.kwargs = kwargs
+        # Only store generation-related parameters, not client parameters
+        self.generation_kwargs = {k: v for k, v in kwargs.items() 
+                                if k in ['temperature', 'max_tokens', 'top_p', 'frequency_penalty', 'presence_penalty']}
     
     @abstractmethod
     def generate(self, prompt: str, params: Optional[GenerationParams] = None) -> LLMOutput:

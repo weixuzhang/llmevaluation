@@ -118,15 +118,44 @@ Be specific and constructive in your feedback. Justify your alignment score with
             return "No specific preferences identified."
         
         formatted = []
+        
+        # Handle structured preferences specifically
+        if 'structured_preferences' in preferences:
+            structured = preferences['structured_preferences']
+            if structured:
+                formatted.append("Structured Preferences:")
+                for key, pref in structured.items():
+                    if hasattr(pref, 'category') and hasattr(pref, 'description'):
+                        # This is an InferredPreference object
+                        formatted.append(f"- {pref.category}: {pref.description} (confidence: {getattr(pref, 'confidence', 'N/A')})")
+                    elif isinstance(pref, dict):
+                        formatted.append(f"- {key}: {pref.get('description', str(pref))}")
+                    else:
+                        formatted.append(f"- {key}: {str(pref)}")
+        
+        # Handle other preference fields
         for key, value in preferences.items():
-            if isinstance(value, list):
+            if key == 'structured_preferences':
+                continue  # Already handled above
+            elif key == 'preference_summary':
+                formatted.append(f"\nSummary: {value}")
+            elif key == 'confidence':
+                formatted.append(f"Overall Confidence: {value}")
+            elif key == 'num_supporting_edits':
+                formatted.append(f"Based on {value} edit examples")
+            elif isinstance(value, (list, tuple)):
                 formatted.append(f"- {key}: {', '.join(str(v) for v in value)}")
             elif isinstance(value, dict):
-                formatted.append(f"- {key}: {json.dumps(value, indent=2)}")
+                # Safe JSON serialization
+                try:
+                    json_str = json.dumps(value, indent=2, default=str)
+                    formatted.append(f"- {key}: {json_str}")
+                except (TypeError, ValueError):
+                    formatted.append(f"- {key}: {str(value)}")
             else:
                 formatted.append(f"- {key}: {value}")
         
-        return "\n".join(formatted)
+        return "\n".join(formatted) if formatted else "No specific preferences identified."
     
     def _parse_judge_response(self, response_text: str) -> Dict[str, Any]:
         """Parse judge response into structured format"""
@@ -254,8 +283,8 @@ class MetaJudge:
                                 preferences: Dict[str, Any]) -> str:
         """Create prompt for meta-judge evaluation"""
         
-        judge_feedback_text = json.dumps(judge_feedback, indent=2)
-        preferences_text = json.dumps(preferences, indent=2)
+        judge_feedback_text = json.dumps(judge_feedback, indent=2, default=str)
+        preferences_text = json.dumps(preferences, indent=2, default=str)
         
         meta_prompt = f"""You are a meta-evaluator assessing the quality of an AI judge's evaluation. Your job is to critique the judge's assessment and suggest improvements.
 

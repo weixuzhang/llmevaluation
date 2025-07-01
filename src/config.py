@@ -36,6 +36,7 @@ class RefinementConfig:
 class PreferenceConfig:
     """Configuration for preference learning and steering"""
     embedding_dim: int = 768
+    preference_dim: int = 256  # Dimension of preference embeddings
     encoder_model: str = "sentence-transformers/all-mpnet-base-v2"
     learning_rate: float = 1e-4
     batch_size: int = 32
