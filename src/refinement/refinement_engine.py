@@ -7,12 +7,12 @@ from dataclasses import dataclass
 import logging
 import time
 
-from ..models.llm_interface import LLMInterface, LLMOutput
-from ..models.preference_embedder import PreferenceEmbedder, EditPair
-from .judge import Judge, MetaJudge
-from .preference_inference import PreferenceInferenceModule
-from .feedback_controller import FeedbackController
-from ..config import RefinementConfig
+from models.llm_interface import LLMInterface, LLMOutput
+from models.preference_embedder import PreferenceEmbedder, EditPair
+from refinement.judge import Judge, MetaJudge
+from refinement.preference_inference import PreferenceInferenceModule
+from refinement.feedback_controller import FeedbackController
+from config import RefinementConfig
 
 
 @dataclass

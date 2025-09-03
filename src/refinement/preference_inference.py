@@ -8,7 +8,7 @@ import logging
 import numpy as np
 from collections import Counter
 
-from ..models.preference_embedder import PreferenceEmbedder, EditPair
+from models.preference_embedder import PreferenceEmbedder, EditPair
 
 
 @dataclass

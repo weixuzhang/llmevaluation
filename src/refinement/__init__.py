@@ -2,10 +2,10 @@
 Iterative refinement components for personalized LLM evaluation.
 """
 
-from .refinement_engine import RefinementEngine
-from .judge import Judge, MetaJudge
-from .preference_inference import PreferenceInferenceModule
-from .feedback_controller import FeedbackController
+from refinement.refinement_engine import RefinementEngine
+from refinement.judge import Judge, MetaJudge
+from refinement.preference_inference import PreferenceInferenceModule
+from refinement.feedback_controller import FeedbackController
 
 __all__ = [
     'RefinementEngine',

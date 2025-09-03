@@ -7,7 +7,7 @@ from dataclasses import dataclass
 import logging
 import json
 
-from ..models.llm_interface import LLMInterface, GenerationParams
+from models.llm_interface import LLMInterface, GenerationParams
 
 
 @dataclass

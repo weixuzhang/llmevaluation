@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Any
 import logging
 import json
 
-from ..config import RefinementConfig
+from config import RefinementConfig
 
 
 class FeedbackController:
