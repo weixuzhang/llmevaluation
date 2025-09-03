@@ -1,0 +1,26 @@
+# Default configuration for personalization experiments
+
+experiment:
+  name: null  # Auto-generated if null
+  output_dir: "./experiments"
+  log_level: "INFO"
+  save_samples: true
+
+dataset:
+  task: "LongLaMP-2"  # LongLaMP-2, LongLaMP-3, LongLaMP-4
+  num_users: 10  # -1 for all users
+  split: "test"
+
+model:
+  name: "microsoft/DialoGPT-small"  # HuggingFace model name
+  max_new_tokens: 256
+  temperature: 0.7
+  top_p: 0.9
+
+personalization:
+  beta: 0.1  # Personalization strength
+  embedding_model: "all-MiniLM-L6-v2"
+
+training:
+  batch_size: 8
+  seed: 42
